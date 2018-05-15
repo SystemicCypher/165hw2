@@ -103,7 +103,7 @@ def run_train_test(training_input, testing_input):
 
     # Train classifier
     train_output = basic_linear_classifier_train(train_data, feature_count_train, class_count_train, feature_size_train)
-    #test_output = basic_linear_classifier_test(test_data, train_output)
+    test_output = basic_linear_classifier_test(test_data, train_output)
 
     # Compare and get the stats to return
 
