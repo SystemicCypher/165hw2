@@ -21,6 +21,7 @@ def coordSub(pointA, pointB, size):
     coSum = [0.0 for i in range(size)]
     for x in range(size):
         coSum[x] = pointA[x] - pointB[x]
+        coSum[x] = coSum[x]/2.0
     return coSum
 
 def basic_linear_classifier_train(train_data, train_info):
@@ -31,19 +32,18 @@ def basic_linear_classifier_train(train_data, train_info):
     for i in range(0, total_labels):
         centroids.append(centroid_calculator(train_data, train_info[0], i, train_info[i]))
     
-    distance = [[0.0 for i in range(total_labels)] for j in range(total_labels)]
+    #distance = [[0.0 for i in range(total_labels)] for j in range(total_labels)]
     classifier = [[0.0 for i in range(total_labels)] for j in range(total_labels)]
     
     for i in range(0, total_labels):
         for j in range(0, total_labels):
             if i == j:
-                distance[i][j] = 0
+                classifier[i][j] = 0
             else:
-                distance[i][j] = coordSub(centroids[i], centroids[j], train_info[0])
+                classifier[i][j] = coordSub(centroids[i], centroids[j], train_info[0])
 
-    for i in range(total_labels):
-        for j in range(total_labels):
-            classifier[i][j] = distance[i][j]/2.0
+
+    return classifier
     
 
 
