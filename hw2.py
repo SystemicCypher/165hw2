@@ -11,6 +11,7 @@ def plotPoints(train_data):
     ax.scatter3D(x, y, z, c=z, cmap='Greens')
     fig.savefig("foo.png")
 
+# Utility functions
 def centroid_calculator(train_data, feature_count, class_count, label, feature_size):
     # Initializations
     point_sum = [0.0] * feature_count
@@ -31,13 +32,49 @@ def centroid_calculator(train_data, feature_count, class_count, label, feature_s
 
     return centroid
 
-def coordSub(pointA, pointB, size):
+def coordSub(pointA, pointB, size, midflag):
     coSum = [0.0] * size
     for x in range(size):
         coSum[x] = pointA[x] - pointB[x]
-        coSum[x] = coSum[x]/2.0
+        if midflag == 1:
+            coSum[x] = coSum[x]/2.0
     return coSum
 
+def coordSq(point):
+    summ = 0.0
+    for value in point:
+        summ += value**2
+    return summ
+
+def vecMult(w, x):
+    output = 0.0
+    for i in range(len(w)):
+        output += w[i] * x[i]
+    return output
+
+
+# Uses the classifier
+def classify(point, classif_w, classif_bias, class_count):
+    y_hat_vals = []
+    for i in range(class_count):
+        temp = vecMult(classif_w[i], point) + classif_bias[i]
+        y_hat_vals.append(temp)
+    positiveCounter = 0
+    for i in range(class_count):
+        if y_hat_vals[i] > 0:
+            positiveCounter += 1
+    
+    if positiveCounter == 0:
+        y_hat = "C"
+    elif positiveCounter == 1:
+        y_hat = "B"
+    elif positiveCounter == 3:
+        y_hat = "A"
+    else:
+        y_hat = "B"
+    return y_hat
+
+# Trains and creates the classifier
 def basic_linear_classifier_train(train_data, feature_count_train, class_count_train, feature_size_train):
     centroids = []
 
@@ -45,23 +82,42 @@ def basic_linear_classifier_train(train_data, feature_count_train, class_count_t
         centroids.append(centroid_calculator(train_data, feature_count_train, class_count_train, i, feature_size_train))
 
     
-    classifier = [[0.0 for i in range(class_count_train)] for j in range(class_count_train)]
+    bias = [[0.0 for i in range(class_count_train)] for j in range(class_count_train)]
+    w = [[0.0 for i in range(class_count_train)] for j in range(class_count_train)]
     
     for i in range(0, class_count_train):
         for j in range(0, class_count_train):
             if i == j:
-                classifier[i][j] = 0
+                w[i][j] = 0
             else:
-                classifier[i][j] = coordSub(centroids[i], centroids[j], feature_count_train)
+                w[i][j] = coordSub(centroids[i], centroids[j], feature_count_train, 0)
 
-    return classifier
+    for i in range(class_count_train):
+        for j in range(class_count_train):
+            bias[i][j] = -0.5 * (coordSq(centroids[i]) - coordSq(centroids[j]))
+    classif_bias = []
+    classif_w = []
+    for i in range(class_count_train-1):
+        for j in range(i+1, class_count_train):
+            classif_bias.append(bias[i][j])
+            classif_w.append(w[i][j])
+
+    test_class = []
+    for i in range(100,200):
+        test_class.append(classify(train_data[i] ,classif_w, classif_bias, class_count_train))
+
+    return classif_w, classif_bias
     
 
 
-
-def basic_linear_classifier_test(test_data, classifier):
-
-    return 3
+# Tests the classifier
+def basic_linear_classifier_test(test_data, w, bias, class_count, feat_count, feat_size):
+    classified = []
+    for point in test_data:
+        classified.append(classify(point, w, bias, class_count))
+    for i in range(len(classified)):
+        print classified[i]
+    return classified
 
 def run_train_test(training_input, testing_input):
     """
@@ -105,20 +161,25 @@ def run_train_test(training_input, testing_input):
     feature_size_train = infoTr[1:]
 
 
-    #class_count_test = len(infoTes[1:])
-    #feature_count_test = infoTes[0]
-    #feature_size_test = infoTr[1:]
+    class_count_test = len(infoTes[1:])
+    feature_count_test = infoTes[0]
+    feature_size_test = infoTr[1:]
 
     # Get the remaining data into the proper arrays
     train_data = training_input[1:]
     test_data = testing_input[1:]
 
     # Train classifier
-    train_output = basic_linear_classifier_train(train_data, feature_count_train, class_count_train, feature_size_train)
-    test_output = basic_linear_classifier_test(test_data, train_output)
+    w, bias = basic_linear_classifier_train(train_data, feature_count_train, class_count_train, feature_size_train)
+    test_output = basic_linear_classifier_test(test_data, w, bias, class_count_test, feature_count_test, feature_size_test)
+
+    actual_vals_A = ["A"] * feature_size_test[0]
+    actual_vals_B = ["B"] * feature_size_test[1]
+    actual_vals_C = ["C"] * feature_size_test[2]
+    actVal = actual_vals_A + actual_vals_B + actual_vals_C
 
     # Compare and get the stats to return
-    plotPoints(train_data)
+    
 
     return {
             "tpr": TPR,
