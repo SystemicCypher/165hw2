@@ -8,17 +8,18 @@ def centroid_calculator(train_data, feature_count, label, label_count):
     # Calculation
     # Sum of every point 
     for i in range(0+label_count*label,label_count*(label+1)):
-        for j in range(0,feature_count):
+        print train_data[i]
+        for j in range(0, feature_count):
             point_sum[j] += train_data[i][j]
 
     # Mean point - "centroid"
     for i in range(0, feature_count):
         centroid[i] = point_sum[i]/feature_count
 
-    return (label, centroid)
+    return centroid
 
 def coordSub(pointA, pointB, size):
-    coSum = [0.0 for i in range(size)]
+    coSum = [0.0] * size
     for x in range(size):
         coSum[x] = pointA[x] - pointB[x]
         coSum[x] = coSum[x]/2.0
@@ -31,7 +32,8 @@ def basic_linear_classifier_train(train_data, train_info):
         total_labels += 1
     for i in range(0, total_labels):
         centroids.append(centroid_calculator(train_data, train_info[0], i, train_info[i]))
-    
+        #print centroids[i]
+
     #distance = [[0.0 for i in range(total_labels)] for j in range(total_labels)]
     classifier = [[0.0 for i in range(total_labels)] for j in range(total_labels)]
     
@@ -40,9 +42,11 @@ def basic_linear_classifier_train(train_data, train_info):
             if i == j:
                 classifier[i][j] = 0
             else:
+                #print coordSub(centroids[i], centroids[j], train_info[0])
                 classifier[i][j] = coordSub(centroids[i], centroids[j], train_info[0])
 
-
+    print "~~~~~~~~~~~~~~~~~~~~~"
+    print classifier
     return classifier
     
 
@@ -88,6 +92,7 @@ def run_train_test(training_input, testing_input):
     # Get dimensionality of data and class sizes
     infoTr = training_input[0]
     infoTes = testing_input[0]
+    print infoTr
 
     # Get the remaining data into the proper arrays
     train_data = training_input[1:]
