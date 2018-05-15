@@ -1,21 +1,23 @@
 # Starter code for CS 165B HW2
 
-def centroid_calculator(train_data, feature_count, class_count, label):
+def centroid_calculator(train_data, feature_count, class_count, label, feature_size):
     # Initializations
-    point_sum = [0.0] * train_info[0]
-    centroid = [0.0] * train_info[0]
+    point_sum = [0.0] * feature_count
+    centroid = [0.0] * class_count
+
+    start = 0 + feature_size[label] * label
+    end = feature_size[label] * (label + 1)
 
     # Calculation
     # Sum of every point 
-    for i in range(0 + train_info[label+1]*label, train_info[label+1]*(label+1)):
-        print train_data[i]
-        for j in range(0, train_info[0]):
+    for i in range(start, end):
+        for j in range(0, class_count):
             point_sum[j] += train_data[i][j]
 
     # Mean point - "centroid"
-    for i in range(0, train_info[0]):
-        centroid[i] = point_sum[i]/train_info[0]
-
+    for i in range(0, feature_count):
+        centroid[i] = point_sum[i]/feature_count
+    
     return centroid
 
 def coordSub(pointA, pointB, size):
@@ -25,11 +27,11 @@ def coordSub(pointA, pointB, size):
         coSum[x] = coSum[x]/2.0
     return coSum
 
-def basic_linear_classifier_train(train_data, feature_count_train, class_count_train):
+def basic_linear_classifier_train(train_data, feature_count_train, class_count_train, feature_size_train):
     centroids = []
 
     for i in range(0, class_count_train):
-        centroids.append(centroid_calculator(train_data, feature_count_train, class_count_train, i))
+        centroids.append(centroid_calculator(train_data, feature_count_train, class_count_train, i, feature_size_train))
 
     
     classifier = [[0.0 for i in range(class_count_train)] for j in range(class_count_train)]
@@ -40,7 +42,6 @@ def basic_linear_classifier_train(train_data, feature_count_train, class_count_t
                 classifier[i][j] = 0
             else:
                 classifier[i][j] = coordSub(centroids[i], centroids[j], feature_count_train)
-
     return classifier
     
 
@@ -89,15 +90,19 @@ def run_train_test(training_input, testing_input):
 
     class_count_train = len(infoTr[1:])
     feature_count_train = infoTr[0]
-    class_count_test = len(infoTes[1:])
-    feature_count_test = infoTes[0]
+    feature_size_train = infoTr[1:]
+
+
+    #class_count_test = len(infoTes[1:])
+    #feature_count_test = infoTes[0]
+    #feature_size_test = infoTr[1:]
 
     # Get the remaining data into the proper arrays
     train_data = training_input[1:]
     test_data = testing_input[1:]
 
     # Train classifier
-    train_output = basic_linear_classifier_train(train_data, infoTr)
+    train_output = basic_linear_classifier_train(train_data, feature_count_train, class_count_train, feature_size_train)
     #test_output = basic_linear_classifier_test(test_data, train_output)
 
     # Compare and get the stats to return
