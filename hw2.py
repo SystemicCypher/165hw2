@@ -48,7 +48,8 @@ def basic_linear_classifier_train(train_data, train_info):
 
 
 
-def basic_linear_classifier_test(test_data):
+def basic_linear_classifier_test(test_data, classifier):
+
     return 3
 
 def run_train_test(training_input, testing_input):
@@ -94,7 +95,7 @@ def run_train_test(training_input, testing_input):
 
     # Train classifier
     train_output = basic_linear_classifier_train(train_data, infoTr)
-    test_output = basic_linear_classifier_test(test_data)
+    #test_output = basic_linear_classifier_test(test_data, train_output)
 
     # Compare and get the stats to return
 
