@@ -1,4 +1,15 @@
 # Starter code for CS 165B HW2
+from mpl_toolkits import mplot3d
+import numpy as np
+import matplotlib.pyplot as plt
+
+def plotPoints(train_data):
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    data = np.array(train_data)
+    x,y,z = data.T
+    ax.scatter3D(x, y, z, c=z, cmap='Greens')
+    fig.savefig("foo.png")
 
 def centroid_calculator(train_data, feature_count, class_count, label, feature_size):
     # Initializations
@@ -16,8 +27,8 @@ def centroid_calculator(train_data, feature_count, class_count, label, feature_s
 
     # Mean point - "centroid"
     for i in range(0, feature_count):
-        centroid[i] = point_sum[i]/feature_count
-    
+        centroid[i] = point_sum[i]/feature_size[label]
+
     return centroid
 
 def coordSub(pointA, pointB, size):
@@ -42,6 +53,7 @@ def basic_linear_classifier_train(train_data, feature_count_train, class_count_t
                 classifier[i][j] = 0
             else:
                 classifier[i][j] = coordSub(centroids[i], centroids[j], feature_count_train)
+
     return classifier
     
 
@@ -106,7 +118,7 @@ def run_train_test(training_input, testing_input):
     test_output = basic_linear_classifier_test(test_data, train_output)
 
     # Compare and get the stats to return
-
+    plotPoints(train_data)
 
     return {
             "tpr": TPR,
