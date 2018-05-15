@@ -7,7 +7,7 @@ def centroid_calculator(train_data, feature_count, label, label_count):
 
     # Calculation
     # Sum of every point 
-    for i in range(0,label_count):
+    for i in range(0+label_count*label,label_count*(label+1)):
         for j in range(0,feature_count):
             point_sum[j] += train_data[i][j]
 
@@ -17,6 +17,12 @@ def centroid_calculator(train_data, feature_count, label, label_count):
 
     return (label, centroid)
 
+def coordSub(pointA, pointB, size):
+    coSum = [0.0 for i in range(size)]
+    for x in range(size):
+        coSum[x] = pointA[x] - pointB[x]
+    return coSum
+
 def basic_linear_classifier_train(train_data, train_info):
     centroids = []
     total_labels = -1
@@ -25,6 +31,22 @@ def basic_linear_classifier_train(train_data, train_info):
     for i in range(0, total_labels):
         centroids.append(centroid_calculator(train_data, train_info[0], i, train_info[i]))
     
+    distance = [[0.0 for i in range(total_labels)] for j in range(total_labels)]
+    classifier = [[0.0 for i in range(total_labels)] for j in range(total_labels)]
+    
+    for i in range(0, total_labels):
+        for j in range(0, total_labels):
+            if i == j:
+                distance[i][j] = 0
+            else:
+                distance[i][j] = coordSub(centroids[i], centroids[j], train_info[0])
+
+    for i in range(total_labels):
+        for j in range(total_labels):
+            classifier[i][j] = distance[i][j]/2.0
+    
+
+
 
 def basic_linear_classifier_test(test_data):
     return 3
