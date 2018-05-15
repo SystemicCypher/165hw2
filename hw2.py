@@ -1,20 +1,20 @@
 # Starter code for CS 165B HW2
 
-def centroid_calculator(train_data, feature_count, label, label_count):
+def centroid_calculator(train_data, feature_count, class_count, label):
     # Initializations
-    point_sum = [0.0] * feature_count
-    centroid = [0.0] * feature_count
+    point_sum = [0.0] * train_info[0]
+    centroid = [0.0] * train_info[0]
 
     # Calculation
     # Sum of every point 
-    for i in range(0+label_count*label,label_count*(label+1)):
+    for i in range(0 + train_info[label+1]*label, train_info[label+1]*(label+1)):
         print train_data[i]
-        for j in range(0, feature_count):
+        for j in range(0, train_info[0]):
             point_sum[j] += train_data[i][j]
 
     # Mean point - "centroid"
-    for i in range(0, feature_count):
-        centroid[i] = point_sum[i]/feature_count
+    for i in range(0, train_info[0]):
+        centroid[i] = point_sum[i]/train_info[0]
 
     return centroid
 
@@ -25,28 +25,22 @@ def coordSub(pointA, pointB, size):
         coSum[x] = coSum[x]/2.0
     return coSum
 
-def basic_linear_classifier_train(train_data, train_info):
+def basic_linear_classifier_train(train_data, feature_count_train, class_count_train):
     centroids = []
-    total_labels = -1
-    for i in train_info:
-        total_labels += 1
-    for i in range(0, total_labels):
-        centroids.append(centroid_calculator(train_data, train_info[0], i, train_info[i]))
-        #print centroids[i]
 
-    #distance = [[0.0 for i in range(total_labels)] for j in range(total_labels)]
-    classifier = [[0.0 for i in range(total_labels)] for j in range(total_labels)]
+    for i in range(0, class_count_train):
+        centroids.append(centroid_calculator(train_data, feature_count_train, class_count_train, i))
+
     
-    for i in range(0, total_labels):
-        for j in range(0, total_labels):
+    classifier = [[0.0 for i in range(class_count_train)] for j in range(class_count_train)]
+    
+    for i in range(0, class_count_train):
+        for j in range(0, class_count_train):
             if i == j:
                 classifier[i][j] = 0
             else:
-                #print coordSub(centroids[i], centroids[j], train_info[0])
-                classifier[i][j] = coordSub(centroids[i], centroids[j], train_info[0])
+                classifier[i][j] = coordSub(centroids[i], centroids[j], feature_count_train)
 
-    print "~~~~~~~~~~~~~~~~~~~~~"
-    print classifier
     return classifier
     
 
@@ -92,7 +86,11 @@ def run_train_test(training_input, testing_input):
     # Get dimensionality of data and class sizes
     infoTr = training_input[0]
     infoTes = testing_input[0]
-    print infoTr
+
+    class_count_train = len(infoTr[1:])
+    feature_count_train = infoTr[0]
+    class_count_test = len(infoTes[1:])
+    feature_count_test = infoTes[0]
 
     # Get the remaining data into the proper arrays
     train_data = training_input[1:]
