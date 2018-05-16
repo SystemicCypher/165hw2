@@ -170,11 +170,6 @@ def run_train_test(training_input, testing_input):
     test_output = basic_linear_classifier_test(test_data, w, bias)
 
 
-    actual_vals_A = ["A"] * feature_size_test[0]
-    actual_vals_B = ["B"] * feature_size_test[1]
-    actual_vals_C = ["C"] * feature_size_test[2]
-    acVals = actual_vals_A + actual_vals_B + actual_vals_C
-
     # Compare and get the stats to return
     trueAs = 0.0
     trueBs = 0.0
@@ -268,5 +263,5 @@ if __name__ == "__main__":
     training_input = parse_file(sys.argv[1])
     testing_input = parse_file(sys.argv[2])
 
-    print run_train_test(training_input, testing_input)
+    run_train_test(training_input, testing_input)
 
