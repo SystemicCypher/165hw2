@@ -38,7 +38,7 @@ def coordSq(point):
 def vecMult(w, x):
     output = 0.0
     for i in range(len(w)):
-        output += w[i] * x[i]
+        output += (w[i] * x[i])
     return output
 
 
