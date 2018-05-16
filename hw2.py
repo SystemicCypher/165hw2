@@ -1,15 +1,5 @@
 # Starter code for CS 165B HW2
-from mpl_toolkits import mplot3d
 import numpy as np
-import matplotlib.pyplot as plt
-
-def plotPoints(train_data):
-    fig = plt.figure()
-    ax = plt.axes(projection='3d')
-    data = np.array(train_data)
-    x,y,z = data.T
-    ax.scatter3D(x, y, z, c=z, cmap='Greens')
-    fig.savefig("foo.png")
 
 # Utility functions
 def centroid_calculator(train_data, feature_count, label, feature_size):
@@ -53,26 +43,35 @@ def vecMult(w, x):
 
 
 # Uses the classifier
-def classify(point, classif_w, classif_bias):
-    y_hat_vals = []
-    
-    for i in range(3):
-        temp = vecMult(classif_w[i], point) + classif_bias[i]
-        y_hat_vals.append(temp)
-    
-    positiveCounter = 0
-    for i in range(3):
-        if y_hat_vals[i] > 0:
-            positiveCounter += 1
-    
-    if positiveCounter == 0:
-        y_hat = "C"
-    elif positiveCounter == 1:
-        y_hat = "B"
-    elif positiveCounter == 3:
-        y_hat = "A"
+def classify(point, classif_w, classif_bias):    
+    A = False
+    B = False
+    C = False
+
+    if (vecMult(classif_w[0], point) + classif_bias[0]) >= 0:
+        A = True
     else:
+        B = True
+    
+    if A:
+        if (vecMult(classif_w[1], point) + classif_bias[1]) >= 0:
+            A = True
+        else:
+            C = True
+            A = False
+    else:
+        if (vecMult(classif_w[2], point) + classif_bias[2]) >= 0:
+            B = True
+        else:
+            C = True
+            B = False
+
+    if A:
+        y_hat = "A"
+    elif B:
         y_hat = "B"
+    else:
+        y_hat = "C"
     return y_hat
 
 # Trains and creates the classifier
@@ -228,7 +227,11 @@ def run_train_test(training_input, testing_input):
     precC = trueCs / (trueCs + falseC_A + falseC_B)
     precision = (precA + precB + precC) / 3.0
     #print precision
-    
+    TPR = round(TPR, 2)
+    FPR = round(FPR, 2)
+    errRate = round(errRate, 2)
+    accuracy = round(accuracy, 2)
+    precision = round(precision, 2)
 
     return {
             "tpr": TPR,
