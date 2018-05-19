@@ -1,117 +1,81 @@
+from __future__ import division
 # Starter code for CS 165B HW2
 import numpy as np
 
-# Utility functions
-def centroid_calculator(train_data, feature_count, label, feature_size):
-    # Initializations
-    point_sum = [0.0] * feature_count
-    centroid = [0.0] * feature_count
 
-    start = 0 + feature_size[label] * label
-    end = feature_size[label] * (label + 1)
-
-    # Calculation
-    # Sum of every point 
-    for i in range(start, end):
-        for j in range(0, feature_count):
-            point_sum[j] += train_data[i][j]
-
-    # Mean point - "centroid"
-    for i in range(0, feature_count):
-        centroid[i] = point_sum[i]/feature_size[label]
-    return centroid
-
-def coordSub(pointA, pointB, size, midflag):
-    coSum = [0.0] * size
-    for x in range(size):
-        coSum[x] = pointA[x] - pointB[x]
-        if midflag == 1:
-            coSum[x] = coSum[x]/2.0
-    return coSum
-
-def coordSq(point):
-    summ = 0.0
-    for value in point:
-        summ += value**2
-    return summ
-
-def vecMult(w, x):
-    output = 0.0
-    for i in range(len(w)):
-        output += (w[i] * x[i])
-    return output
-
-
-# Uses the classifier
-def classify(point, classif_w, classif_bias):    
-    A = False
-    B = False
-    C = False
-
-    if (vecMult(classif_w[0], point) + classif_bias[0]) >= 0:
-        A = True
-    else:
-        B = True
+def train_classifier(data, dimension, valuesPerClass):
+    classA = []
+    classB = []
+    classC = []
     
-    if A:
-        if (vecMult(classif_w[1], point) + classif_bias[1]) >= 0:
-            A = True
-        else:
-            C = True
-            A = False
-    else:
-        if (vecMult(classif_w[2], point) + classif_bias[2]) >= 0:
-            B = True
-        else:
-            C = True
-            B = False
+    for i in range(valuesPerClass[0]):
+        classA.append(data[i])
+    
+    for i in range(valuesPerClass[0], valuesPerClass[0] + valuesPerClass[1]):
+        classB.append(data[i])
+    
+    for i in range(valuesPerClass[0] + valuesPerClass[1], valuesPerClass[0] + valuesPerClass[1] + valuesPerClass[2]):
+        classC.append(data[i])
+    
+    A = np.array(classA)
+    B = np.array(classB)
+    C = np.array(classC)
 
-    if A:
-        y_hat = "A"
-    elif B:
-        y_hat = "B"
+    centroidA = np.mean(A, axis=0)
+    centroidB = np.mean(B, axis=0)
+    centroidC = np.mean(C, axis=0)
+    #print centroidA, centroidB, centroidC
+
+    wAB = centroidA - centroidB
+    wAC = centroidA - centroidC
+    wBC = centroidB - centroidC
+    #print wA,wB,wC
+
+    w = [wAB, wAC, wBC]
+    w = np.array(w)
+    #print w
+
+    biasAB = -0.5 * (centroidA**2 - centroidB**2)
+    biasAB = -0.5 * np.dot((centroidA - centroidB),(centroidA + centroidB))
+    biasAC = -0.5 * (centroidA**2 - centroidC**2)
+    biasAC = -0.5 * np.dot((centroidA - centroidC),(centroidA + centroidC))
+    biasBC = -0.5 * (centroidB**2 - centroidC**2)
+    biasBC = -0.5 * np.dot((centroidB - centroidC),(centroidB + centroidC))
+    #print biasAB, biasAC, biasBC
+
+    bias = [[biasAB, biasAC, biasBC]]
+    bias = np.array(bias)
+    #print bias
+
+    return w, bias 
+
+def classify(point, w, bias, dimension):
+    coord = np.array([point]).reshape(((dimension, 1)))
+    
+    AB_val = (np.dot(w[0], coord)[0] + bias[0][0])
+    AC_val = (np.dot(w[1], coord)[0] + bias[0][1])
+    BC_val = (np.dot(w[2], coord)[0] + bias[0][2])
+    
+
+    if AB_val >= 0:
+        if AC_val >= 0:
+            y_hat = "A"
+        else:
+            y_hat = "C"
     else:
-        y_hat = "C"
+        if BC_val >= 0:
+            y_hat = "B"
+        else:
+            y_hat = "C"
+        
+    
+
     return y_hat
 
-# Trains and creates the classifier
-def basic_linear_classifier_train(train_data, feature_count_train, feature_size_train):
-    centroids = []
-    for i in range(3):
-        centroids.append(centroid_calculator(train_data, feature_count_train, i, feature_size_train))
-    
-    bias = [[0.0 for i in range(3)] for j in range(3)]
-    w = [[0.0 for i in range(3)] for j in range(3)]
-    
-    for i in range(3):
-        for j in range(3):
-            if i == j:
-                w[i][j] = 0
-            else:
-                w[i][j] = coordSub(centroids[i], centroids[j], feature_count_train, 0)
-
-    for i in range(3):
-        for j in range(3):
-            bias[i][j] = -0.5 * (coordSq(centroids[i]) - coordSq(centroids[j]))
-    
-    classif_bias = []
-    classif_w = []
-    
-    for i in range(2):
-        for j in range(i+1, 3):
-            classif_bias.append(bias[i][j])
-            classif_w.append(w[i][j])
-
-
-    return classif_w, classif_bias
-    
-
-
-# Tests the classifier
-def basic_linear_classifier_test(test_data, w, bias):
+def test_and_classify(data, w, bias, dimension):
     classified = []
-    for point in test_data:
-        classified.append(classify(point, w, bias))
+    for point in data:
+        classified.append(classify(point, w, bias, dimension))
     return classified
 
 def run_train_test(training_input, testing_input):
@@ -139,35 +103,28 @@ def run_train_test(training_input, testing_input):
                 "accuracy": accuracy,
                 "precision": precision
             }
-    """ 
-    # Initializations
-    TPR = 0.0
-    FPR = 0.0
-    errRate = 0.0
-    accuracy = 0.0
-    precision = 0.0
+    """
+    train_info = training_input[0]
+    test_info = testing_input[0]
 
-    # Get dimensionality of data and class sizes
-    infoTr = training_input[0]
-    infoTes = testing_input[0]
+    train_dimension = train_info[0]
+    number_training_points_perClass = train_info[1:]
 
-    #class_count_train = len(infoTr[1:]) # the number of classes = 3
-    feature_count_train = infoTr[0] # the dimension of features 3-d 4-d etc
-    feature_size_train = infoTr[1:] # the number of items in the class
+    test_dimension = test_info[0]
+    number_testing_points_perClass = test_info[1:]
+    
 
-
-    #class_count_test = len(infoTes[1:])
-    #feature_count_test = infoTes[0]
-    feature_size_test = infoTes[1:]
-
-    # Get the remaining data into the proper arrays
     train_data = training_input[1:]
     test_data = testing_input[1:]
+    #train = np.array(train_data)
+    #test = np.array(test_data)
 
-    # Train classifier
-    w, bias = basic_linear_classifier_train(train_data, feature_count_train, feature_size_train)
-    test_output = basic_linear_classifier_test(test_data, w, bias)
+    w, bias = train_classifier(train_data, train_dimension, number_training_points_perClass)
+    test_output = test_and_classify(test_data, w, bias, test_dimension)
 
+    #for i in test_output:
+    #    print i
+    
 
     # Compare and get the stats to return
     trueAs = 0.0
@@ -179,9 +136,10 @@ def run_train_test(training_input, testing_input):
     falseA_C = 0.0
     falseC_A = 0.0
     falseC_B = 0.0
-    totalSize = feature_size_test[0] + feature_size_test[1] + feature_size_test[2]
 
-    for i in range(feature_size_test[0]):
+    total_size = number_testing_points_perClass[0] + number_testing_points_perClass[1] + number_testing_points_perClass[2]
+
+    for i in range(number_testing_points_perClass[0]):
         if test_output[i] == "A":
             trueAs += 1.0
         elif test_output[i] == "B":
@@ -189,7 +147,7 @@ def run_train_test(training_input, testing_input):
         else:
             falseC_A += 1.0
 
-    for i in range(feature_size_test[0], feature_size_test[0] + feature_size_test[1]):
+    for i in range(number_testing_points_perClass[0], number_testing_points_perClass[0] + number_testing_points_perClass[1]):
         if test_output[i] == "B":
             trueBs += 1.0
         elif test_output[i] == "A":
@@ -197,31 +155,42 @@ def run_train_test(training_input, testing_input):
         else:
             falseC_B += 1.0
 
-    for i in range(feature_size_test[0] + feature_size_test[1], feature_size_test[0] + feature_size_test[1] + feature_size_test[2]):
+    for i in range(number_testing_points_perClass[0] + number_testing_points_perClass[1], number_testing_points_perClass[0] + number_testing_points_perClass[1] + number_testing_points_perClass[2]):
         if test_output[i] == "C":
             trueCs += 1.0
         elif test_output[i] == "A":
-            falseC_A += 1.0
+            falseA_C += 1.0
         else:
-            falseC_B += 1.0
+            falseB_C += 1.0
 
-    tprA = trueAs / feature_size_test[0]
-    tprB = trueBs / feature_size_test[1]
-    tprC = trueCs / feature_size_test[2]
+    tprA = trueAs / (trueAs + falseB_A + falseC_A)
+    tprB = trueBs / (trueBs + falseA_B + falseC_B)
+    tprC = trueCs / (trueCs + falseB_C + falseA_C)
     TPR = (tprA + tprB + tprC) / 3.0
     #print TPR
-    fprA = (falseA_B + falseA_C) / (feature_size_test[1] + feature_size_test[2])
-    fprB = (falseB_A + falseB_C) / (feature_size_test[0] + feature_size_test[2])
-    fprC = (falseC_B + falseC_A) / (feature_size_test[0] + feature_size_test[1])
+    fprA = (falseA_B + falseA_C) / (falseA_B + falseA_C + trueBs + falseC_B + falseB_C + trueCs)
+    fprB = (falseB_A + falseB_C) / (falseB_A + falseB_C + trueAs + falseC_A + falseA_C + trueCs)
+    fprC = (falseC_B + falseC_A) / (falseC_B + falseC_A + falseB_A + trueBs + trueAs + falseA_B)
     FPR = (fprA + fprB + fprC) / 3.0
     #print FPR
-    errA = (feature_size_test[0] - trueAs)/feature_size_test[0]
-    errB = (feature_size_test[1] - trueBs)/feature_size_test[1]
-    errC = (feature_size_test[2] - trueCs)/feature_size_test[2]
+    errA = (falseA_B + falseA_C + falseB_A + falseC_A)/((falseA_B + falseA_C + trueBs + falseC_B + falseB_C + trueCs) + (trueAs + falseB_A + falseC_A))
+    errB = (falseB_A + falseB_C + falseA_B + falseC_B)/((falseB_A + falseB_C + trueAs + falseC_A + falseA_C + trueCs) + (trueBs + falseA_B + falseC_B))
+    errC = (falseC_A + falseC_B + falseA_C + falseB_C)/((falseC_B + falseC_A + falseB_A + trueBs + trueAs + falseA_B) + (trueCs + falseB_C + falseA_C) )
     errRate = (errA + errB + errC) / 3.0
     #print errRate
-    accuracy = (trueAs + trueBs + trueCs)/totalSize
-    #print accuracy
+    #accA = 
+    P_A =  trueAs + falseB_A + falseC_A
+    P_B =  trueBs + falseA_B + falseC_B
+    P_C =  trueCs + falseB_C + falseA_C
+    N_A = falseA_B + falseA_C + trueBs + falseC_B + falseB_C + trueCs
+    N_B = falseB_A + falseB_C + trueAs + falseC_A + falseA_C + trueCs
+    N_C = falseC_B + falseC_A + falseB_A + trueBs + trueAs + falseA_B
+    #print P_A, P_B, P_C, N_A, N_B, N_C
+    accuracyA = (P_A/(P_A + N_A))*tprA + (N_A/(P_A + N_A))*(1 - fprA)
+    accuracyB = (P_B/(P_B + N_B))*tprB + (N_B/(P_B + N_B))*(1 - fprB)
+    accuracyC = (P_C/(P_C + N_C))*tprC + (N_C/(P_C + N_C))*(1 - fprC)
+    accuracy = (accuracyA + accuracyB + accuracyC) / 3.0
+
     precA = trueAs / (trueAs + falseA_B + falseA_C)
     precB = trueBs / (trueBs + falseB_A + falseB_C)
     precC = trueCs / (trueCs + falseC_A + falseC_B)
@@ -240,6 +209,13 @@ def run_train_test(training_input, testing_input):
             "accuracy": accuracy,
             "precision": precision
             }
+
+
+
+
+
+    
+    
 
 
 #######
@@ -266,5 +242,5 @@ if __name__ == "__main__":
     training_input = parse_file(sys.argv[1])
     testing_input = parse_file(sys.argv[2])
 
-    run_train_test(training_input, testing_input)
+    print run_train_test(training_input, testing_input)
 
